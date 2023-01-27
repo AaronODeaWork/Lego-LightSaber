@@ -3,6 +3,7 @@
 #include <Adafruit_NeoPixel.h>
 #include "FastLED.h"
 #include <Math.h>
+#include "LowPower.h"
 
 
 #ifdef __AVR__
@@ -26,6 +27,9 @@ bool ON_OFF_Button_CanChange = true;
 
 uint32_t ON_OFF_Time = millis();
 uint32_t ON_OFF_Timer = 500;
+
+uint32_t Enter_Sleep_Time = millis();
+uint32_t Enter_Sleep__Timer = 5000;
 //=============================================================
 
 
@@ -110,7 +114,9 @@ void Clear() {
   }
 }
 //------------
-
+void VOID(void)
+{
+}
 
 //==========================  REAL  ==========================
 //----Plasma effect functions----
@@ -785,7 +791,6 @@ void Lego() {
         LegoFullyOFF = true;
       }
 
-      //TODO switch this for a low power activate
       // check for when to turn back on
 
       if(ON_OFF_Button_State == HIGH)
@@ -836,7 +841,6 @@ void Real() {
       }
       realFullyoff = true;
 
-      //TODO switch this for a low power activate 
       if(ON_OFF_Button_State == HIGH)
       {
         m_CurrentSaberState = TURN_ON;
@@ -875,7 +879,6 @@ void Funky() {
 
     case TURN_OFF:
       FunkyEnd();
-      //TODO switch this for a low power activate 
       if(ON_OFF_Button_State == HIGH)
       {
         m_CurrentSaberState = TURN_ON; 
@@ -918,7 +921,6 @@ void Xmas() {
         LegoFullyOFF = true;
       }
 
-      //TODO switch this for a low power activate 
       // check for when to turn back on
       if(ON_OFF_Button_State == HIGH)
       {
@@ -948,6 +950,7 @@ void Xmas() {
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
 //+++++++++++++++++++++  CORE  ++++++++++++++++++++++
 // Set up function
 void setup() {
@@ -970,18 +973,34 @@ void setup() {
   m_CurrentColour = BLUE;
   m_CurrentMode = LEGO;
 
-  //st
+
+  //turn off button
   ON_OFF_Button_State = true;
 }
 
 // Loop up function
 void loop() {
-
+    
   if(digitalRead(ON_OFF_Button_pin) == HIGH && ON_OFF_Button_CanChange == true)
   {
     ON_OFF_Button_State = !ON_OFF_Button_State;
     ON_OFF_Button_CanChange = false;  
     ON_OFF_Time = millis();
+    Enter_Sleep_Time = millis();
+
+  }
+  else if (ON_OFF_Button_State == LOW)
+  {
+    if((millis() - Enter_Sleep_Time) >= Enter_Sleep__Timer)
+    {
+      Serial.print("Sleepy");
+      attachInterrupt(ON_OFF_Button_pin, VOID, LOW);
+      USBDevice.detach();  
+      LowPower.standby();      
+      USBDevice.attach();
+      detachInterrupt(ON_OFF_Button_pin);
+
+    }
   }
   
   if(ON_OFF_Button_CanChange == false)
@@ -991,7 +1010,6 @@ void loop() {
       ON_OFF_Button_CanChange = true;
     }
   }
-
 
 
   //Switch between modes
