@@ -14,11 +14,11 @@
 //==========================  DEFINES  ==========================
 //----------PIN Setup-----------
 #define LightStrip_pin 12
-#define ON_OFF_Button_pin 9
-#define Mode_Button_pin 5    
+#define ON_OFF_Button_pin 5
+#define Mode_Button_pin 9    
 
 //--------LED Strip set up-------------
-#define NUMBER_OF_LEDS 15
+#define NUMBER_OF_LEDS 144
 //=============================================================
 
 //==========================  Buttons  ==========================
@@ -29,7 +29,7 @@ uint32_t ON_OFF_Time = millis();
 uint32_t ON_OFF_Timer = 500;
 
 uint32_t Enter_Sleep_Time = millis();
-uint32_t Enter_Sleep__Timer = 5000;
+uint32_t Enter_Sleep__Timer = 10000;
 //=============================================================
 
 
@@ -37,10 +37,10 @@ uint32_t Enter_Sleep__Timer = 5000;
 
 //==========================  ENUMS  ==========================
 // ---------STATES----------
-enum SABER_STATE{ TURN_ON, TURN_OFF, IDLE, HIT }; // Define the states the  light saber can be in
+enum SABER_STATE{ TURN_ON, TURN_OFF, IDLE }; // Define the states the  light saber can be in
 SABER_STATE m_CurrentSaberState; // Define the starting state of the light saber
 // --------MODES----------
-enum SABER_MODE{ LEGO, REAL, FUUUNKY, XMAS }; // Define the Modes the  light saber can be in
+enum SABER_MODE{ LEGO, REAL, XMAS }; // Define the Modes the  light saber can be in
 SABER_MODE m_CurrentMode; // Define the Mode of the light saber
 // --------COLOURS----------
 enum SABER_COLOUR{ GREEN, RED, BLUE  }; // Define the Colours the  light saber can be in
@@ -51,29 +51,25 @@ SABER_COLOUR m_CurrentColour; // Define the Colours of the light saber
 // -----Plasma effect----------
 // Plasma
 bool realFullyoff = false;
-uint32_t m_flame_coolDown = 40; // higher number shorter flame.
-uint32_t m_flame_coolDown_multiplier = 10; // flame multipler (just leave at 10 , higher = smaller flame, smaller = larger flame)
+uint32_t m_flame_coolDown = 10; // higher number shorter flame.
+uint32_t m_flame_coolDown_multiplier = 1; // flame multipler (just leave at 10 , higher = smaller flame, smaller = larger flame)
 // Spark
-uint32_t m_Spark_chance = 120; // (0-255) chance of a spark to light
-uint32_t m_min_height_spark = 30; // 0-100% the min height of the spark base
-uint32_t m_min_spark_colour = 160; // min colour of the spark
+uint32_t m_Spark_chance = 140; // (0-255) chance of a spark to light
+uint32_t m_min_height_spark = 45; // 0-100% the min height of the spark base
+uint32_t m_min_spark_colour = 120; // min colour of the spark
 uint32_t m_max_spark_colour = 255; // max colour of the spark
 // Delay of effect
 uint32_t m_Speed_delay = 0; // Speed delay higher slower
 // ---------------------------
 
-uint32_t Brightness = 50;
+uint32_t Brightness = 1;
 
-// -----Lego Fade effect-------
-bool fade = false;
-uint32_t MAX_FADE = 30;
-uint32_t MIN_FADE = 10;
-uint32_t FADE_SPEED = 5; 
-// ---------------------------
 
 // -----Lego Starting effect-------
-uint32_t Lego_ON_OFF_Delay = 10; // the delay in the colour turn on 
+uint32_t Lego_ON_OFF_Delay = 2; // the delay in the colour turn on 
 uint32_t LegoFadeDelay = 0;
+bool LegoFullyOn = false;
+
 // --------------------------------
 
 // -----Lego ending effect-------
@@ -82,7 +78,7 @@ bool LegoFullyOFF = false;
 
 
 // -----Xmas Starting effect-------
-uint32_t XMAS_ON_OFF_Delay = 10; // the delay in the colour turn on 
+uint32_t XMAS_ON_OFF_Delay = 1; // the delay in the colour turn on 
 
 // --------------------------------
 
@@ -508,55 +504,7 @@ void LegoSetColour()
     }
 }
 //---------------------
-//----Lego fade effect function----
-void LegoFadeEffect(uint32_t t_MaxFade,uint32_t t_MinFade, uint32_t t_Speed) {
-
-  if(fade) {
-
-    if(Brightness >= t_MaxFade) { fade = false; }
-    else { Brightness += t_Speed; }
-
-  }
-  else {
-
-    if(Brightness <= t_MinFade) { fade = true; }
-    else { Brightness -= t_Speed; }
-
-  }
-  
-  strip.setBrightness(Brightness); // Initialize all pixels to starting brightness 
-  strip.show(); // Initialize all pixels to 'off'
-  delay(LegoFadeDelay);
-}
 //---------------------------------
-//=============================================================
-
-
-//==========================  FUNKY  ==========================
-//----Funky Start-----
-void FunkyStart() {
-  for(uint16_t i=0; i< NUMBER_OF_LEDS; i++) {
-      strip.setPixelColor(i, strip.Color(0 , 255, 0));
-  }
-  strip.show();
-  delay(LegoFadeDelay);
-}
-//----Funky End-----
-void FunkyEnd() {
-  for(uint16_t i=0; i< NUMBER_OF_LEDS; i++) {
-      strip.setPixelColor(i, strip.Color(255 , 0, 0));
-  }
-  strip.show();
-  delay(LegoFadeDelay);
-}
-//----Funky Idel-----
-void FunkyIdel() {
-  for(uint16_t i=0; i< NUMBER_OF_LEDS; i++) {
-      strip.setPixelColor(i, strip.Color(255 , 255, 0));
-  }
-  strip.show();
-  delay(LegoFadeDelay);
-}
 //=============================================================
 
 
@@ -651,10 +599,9 @@ void XmasEnd() {
               strip.setPixelColor(i, strip.Color(255 ,255, 255));
             }
             
-            delay(Lego_ON_OFF_Delay/2);
         }
         strip.show();
-        delay(Lego_ON_OFF_Delay);
+        delay(XMAS_ON_OFF_Delay);
         COUNT--;
       }
       Clear();
@@ -695,7 +642,6 @@ void XmasEnd() {
                 strip.setPixelColor(i, strip.Color(0 ,0, 255));
               }          
             
-            delay(Lego_ON_OFF_Delay/2);
         }
         strip.show();
         delay(Lego_ON_OFF_Delay);
@@ -801,11 +747,7 @@ void Lego() {
       break;
 
     case IDLE:
-      LegoSetColour();
-        
-      // LegoFadeEffect(MAX_FADE, MIN_FADE , FADE_SPEED);
-      strip.setBrightness(Brightness); // Initialize all pixels to starting brightness 
-      strip.show(); // Initialize all pixels to 'off'
+
 
       // Button check to turn off Saber
       if(ON_OFF_Button_State == LOW)
@@ -813,11 +755,6 @@ void Lego() {
         m_CurrentSaberState = TURN_OFF; 
       }
 
-      break;
-
-    case HIT:
-      //placeholder
-      /* code */
       break;
 
     default:
@@ -859,46 +796,6 @@ void Real() {
       }
       break;
 
-    case HIT:
-      //placeholder
-      /* code */
-      break;
-
-    default:
-      break;
-    }
-}
-
-void Funky() {
-  switch (m_CurrentSaberState)
-    {
-    case TURN_ON:
-      FunkyStart();
-      m_CurrentSaberState = IDLE;
-      break;
-
-    case TURN_OFF:
-      FunkyEnd();
-      if(ON_OFF_Button_State == HIGH)
-      {
-        m_CurrentSaberState = TURN_ON; 
-      }
-      break;
-
-    case IDLE:
-      FunkyIdel();
-      // Button check to turn off Saber
-      if(ON_OFF_Button_State == LOW)
-      {
-        m_CurrentSaberState = TURN_OFF; 
-      }
-      break;
-
-    case HIT:
-      //placeholder
-      /* code */
-      break;
-
     default:
       break;
     }
@@ -938,11 +835,6 @@ void Xmas() {
       }
       break;
 
-    case HIT:
-      //placeholder
-      /* code */
-      break;
-
     default:
       break;
     }
@@ -958,8 +850,11 @@ void setup() {
   // set up serial connection
   Serial.begin(9600); 
 
-  pinMode(ON_OFF_Button_pin, INPUT_PULLDOWN);
-  pinMode(Mode_Button_pin, INPUT);
+  // pinMode(ON_OFF_Button_pin, INPUT_PULLDOWN);
+  // pinMode(Mode_Button_pin, INPUT);
+
+  pinMode(Mode_Button_pin, INPUT_PULLUP);
+  pinMode(ON_OFF_Button_pin, INPUT);
 
   // Set up light saber pin
   m_min_height_spark = ((NUMBER_OF_LEDS * m_min_height_spark)/100); // take the percentage and change it into the number of pixals needed
@@ -970,7 +865,7 @@ void setup() {
 
   // Define starting state of the saber
   m_CurrentSaberState = TURN_ON;
-  m_CurrentColour = BLUE;
+  m_CurrentColour = RED;
   m_CurrentMode = LEGO;
 
 
@@ -993,7 +888,6 @@ void loop() {
   {
     if((millis() - Enter_Sleep_Time) >= Enter_Sleep__Timer)
     {
-      Serial.print("Sleepy");
       attachInterrupt(ON_OFF_Button_pin, VOID, LOW);
       USBDevice.detach();  
       LowPower.standby();      
@@ -1011,7 +905,6 @@ void loop() {
     }
   }
 
-
   //Switch between modes
   switch (m_CurrentMode)
     {
@@ -1021,10 +914,6 @@ void loop() {
 
     case REAL:
       Real();
-      break;
-
-    case FUUUNKY:
-      Funky();
       break;
       
     case XMAS:
@@ -1036,7 +925,7 @@ void loop() {
     }
     
     // // check for mod switch
-    if(digitalRead(Mode_Button_pin) == HIGH)
+    if(digitalRead(Mode_Button_pin) == LOW)
     {
       
       //check if saber is on
@@ -1053,10 +942,6 @@ void loop() {
 
             case REAL:
               Real();
-              break;
-
-            case FUUUNKY:
-              Funky();
               break;
               
             case XMAS:
@@ -1077,12 +962,8 @@ void loop() {
               break;
             
             case REAL:
-              m_CurrentMode = FUUUNKY;
-              break;
-
-            case FUUUNKY:
               m_CurrentMode = XMAS;
-            break;
+              break;
 
             case XMAS:
               m_CurrentMode = LEGO;
@@ -1115,6 +996,8 @@ void loop() {
               break;
             }
             ColourSwapTime = millis();
+            ON_OFF_Button_State = !ON_OFF_Button_State;
+            m_CurrentSaberState = TURN_ON; 
 
           }
         }
